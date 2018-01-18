@@ -35,7 +35,6 @@
     }
   ],
   "dependencies": [
-    { "name": "puppetlabs/python", "version_requirement": ">= 1.0.0" },
     { "name": "puppetlabs/concat", "version_requirement": ">= 1.0.0" },
     { "name": "puppetlabs/git", "version_requirement": ">= 0.5.0" },
     { "name": "puppetlabs/vcsrepo", "version_requirement": ">= 1.2.0" }
