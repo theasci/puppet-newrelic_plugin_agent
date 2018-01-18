@@ -1,12 +1,11 @@
 {
-  "name": "lex-newrelic_plugin_agent",
-  "version": "0.9.1",
+  "name": "theasci-newrelic_plugin_agent",
+  "version": "0.10.1",
   "author": "Lex Rivera <me@lex.io>",
   "license": "Creative Commons Attribution 3.0 Unported License",
   "summary": "Puppet newrelic-plugin-agent module",
-  "source": "https://github.com/rlex/puppet-newrelic_plugin_agent",
-  "project_page": "(https://forge.puppetlabs.com/lex/newrelic_plugin_agent)",
-  "issues_url": "https://github.com/rlex/puppet-newrelic_plugin_agent/issues",
+  "source": "https://github.com/theasci/puppet-newrelic_plugin_agent.git",
+  "project_page": "https://github.com/theasci/puppet-newrelic_plugin_agent",
   "tags": ["newrelic", "newrelic-plugin-agent", "monitoring", "debian", "ubuntu"],
   "operatingsystem_support": [
     {
@@ -37,6 +36,8 @@
   ],
   "dependencies": [
     { "name": "puppetlabs/python", "version_requirement": ">= 1.0.0" },
-    { "name": "puppetlabs/concat", "version_requirement": ">= 1.0.0" }
+    { "name": "puppetlabs/concat", "version_requirement": ">= 1.0.0" },
+    { "name": "puppetlabs/git", "version_requirement": ">= 0.5.0" },
+    { "name": "puppetlabs/vcsrepo", "version_requirement": ">= 1.2.0" }
   ]
 }

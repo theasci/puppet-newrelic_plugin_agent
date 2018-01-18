@@ -11,6 +11,7 @@ class newrelic_plugin_agent (
   $version = installed
 ) {
 
+  include git
   include newrelic_plugin_agent::params
 
   # Localize some variables
@@ -23,26 +24,48 @@ class newrelic_plugin_agent (
   $newrelic_plugin_agent_mongodep   = $newrelic_plugin_agent::params::newrelic_plugin_agent_mongodep
   $newrelic_plugin_agent_postgredep = $newrelic_plugin_agent::params::newrelic_plugin_agent_postgredep
 
-  package { $newrelic_plugin_agent_package:
+  package { 'python':
     ensure   => installed,
-    provider => 'pip'
+  }
+
+  package { 'python-pip':
+    ensure   => installed,
+  }
+  # https://github.com/MeetMe/newrelic-plugin-agent/issues/356
+  ~> exec {'pip install --upgrade setuptools':
+    path   => '/usr/bin',
+    unless => 'pip show setuptools 2> /dev/null',
+  }
+
+  # this supports the postfix version
+  vcsrepo { "/opt/newrelic-plugin-agent":
+    ensure   => present,
+    provider => git,
+    source   => 'https://github.com/SupportBee/newrelic-plugin-agent.git',
+    revision => 'postfix_support',
+  }
+  ~> exec { 'pip install -e `pwd`':
+    cwd     => '/opt/newrelic-plugin-agent',
+    path    => '/usr/bin',
+    creates => '/usr/bin/newrelic-plugin-agent',
+    require => Package['python-pip'],
   }
 
   package { $newrelic_plugin_agent_mongodep:
-    ensure   => installed,
-    before   => Package[$newrelic_plugin_agent_package]
+    ensure  => installed,
+    before => Exec['pip install -e `pwd`'],
   }
 
   package { $newrelic_plugin_agent_postgredep:
     ensure   => installed,
-    before   => Package[$newrelic_plugin_agent_package]
+    before => Exec['pip install -e `pwd`'],
   }
 
   group { 'newrelic':
     name   => $user,
     ensure => present,
     system => true,
-    before => Package[$newrelic_plugin_agent_package]
+    before => Exec['pip install -e `pwd`'],
   }
 
   user { 'newrelic-user':
@@ -50,14 +73,14 @@ class newrelic_plugin_agent (
     system  => true,
     ensure  => present,
     require => Group[$user],
-    before  => Package[$newrelic_plugin_agent_package]
+    before => Exec['pip install -e `pwd`'],
   }
 
   service { 'newrelic-plugin-agent':
     ensure  => $service_ensure,
     name    => $newrelic_plugin_agent_service,
     enable  => $service_enable,
-    require => [ Package[$newrelic_plugin_agent_package],
+    require => [ Exec['pip install -e `pwd`'],
                  File[$newrelic_plugin_agent_confdir],
                  File[$newrelic_plugin_agent_logdir],
                ],
@@ -66,14 +89,6 @@ class newrelic_plugin_agent (
   file { '/etc/init.d/newrelic-plugin-agent':
     content => template($newrelic_plugin_agent_init),
     mode    => '0755',
-  }
-
-  file { $newrelic_plugin_agent_logdir:
-    ensure  => 'directory',
-    owner   => $user,
-    group   => $user,
-    before  => Service[$newrelic_plugin_agent_service],
-    require => [ Group[$user], User[$user] ]
   }
 
   file { $newrelic_plugin_agent_confdir:
@@ -88,27 +103,27 @@ class newrelic_plugin_agent (
     order   => '01',
     target  => $newrelic_plugin_agent_conffile,
     content => template('newrelic_plugin_agent/newrelic-plugin-agent-header.cfg.erb'),
-    require => Package[$newrelic_plugin_agent_package],
+    require => Exec['pip install -e `pwd`'],
   }
 
   concat::fragment { 'newrelic_plugin_agent-footer':
     order   => '99',
     target  => $newrelic_plugin_agent_conffile,
     content => template('newrelic_plugin_agent/newrelic-plugin-agent-footer.cfg.erb'),
-    require => Package[$newrelic_plugin_agent_package],
+    require => Exec['pip install -e `pwd`'],
   }
 
   if $restart {
     concat { $newrelic_plugin_agent_conffile:
       notify  => Service[$newrelic_plugin_agent_service],
-      require => [ Package[$newrelic_plugin_agent_package],
+      require => [ Exec['pip install -e `pwd`'],
                    File[$newrelic_plugin_agent_confdir],
                    File[$newrelic_plugin_agent_logdir],
                  ],
     }
   } else {
     concat { $newrelic_plugin_agent_conffile:
-      require => [ Package[$newrelic_plugin_agent_package],
+      require => [ Exec['pip install -e `pwd`'],
                    File[$newrelic_plugin_agent_confdir],
                    File[$newrelic_plugin_agent_logdir],
                  ],
@@ -118,4 +133,3 @@ class newrelic_plugin_agent (
 
 
 }
-
