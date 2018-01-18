@@ -28,16 +28,18 @@ class newrelic_plugin_agent (
     ensure   => installed,
   }
 
-  package { 'python-devel':
-    ensure   => installed,
-  }
-  -> package { 'python-pip':
+  package { 'python-pip':
     ensure   => installed,
   }
   # https://github.com/MeetMe/newrelic-plugin-agent/issues/356
-  ~> exec {'sudo pip install --upgrade setuptools > /opt/setuptools_upgraded':
+  # This has to be done BEFORE starting the service but after installing..
+  exec {'sudo pip install --upgrade setuptools > /opt/setuptools_upgraded':
     path    => '/usr/bin',
     creates => '/opt/setuptools_upgraded',
+    require => [ Exec['pip install -e `pwd`'],
+                 File[$newrelic_plugin_agent_confdir],
+                 File[$newrelic_plugin_agent_logdir],
+               ],
   }
 
   # this supports the postfix version
@@ -80,10 +82,11 @@ class newrelic_plugin_agent (
   }
 
   service { 'newrelic-plugin-agent':
-    ensure  => $service_ensure,
+    ensure  => running,
     name    => $newrelic_plugin_agent_service,
-    enable  => $service_enable,
+    enable  => true,
     require => [ Exec['pip install -e `pwd`'],
+                 Exec['sudo pip install --upgrade setuptools > /opt/setuptools_upgraded'],
                  File[$newrelic_plugin_agent_confdir],
                  File[$newrelic_plugin_agent_logdir],
                ],
