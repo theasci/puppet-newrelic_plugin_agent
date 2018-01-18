@@ -17,7 +17,7 @@ class newrelic_plugin_agent::params {
       $newrelic_plugin_agent_service = 'newrelic-plugin-agent'
       $newrelic_plugin_agent_package = 'newrelic-plugin-agent'
       $newrelic_plugin_agent_confdir = '/etc/newrelic/'
-      $newrelic_plugin_agent_init = 'newrelic_plugin_agent/etc/init.d/newrelic-plugin-agent.deb'
+      $newrelic_plugin_agent_init = 'newrelic_plugin_agent/etc/init.d/newrelic-plugin-agent.rhel'
       $newrelic_plugin_agent_mongodep = 'python-pymongo'
       $newrelic_plugin_agent_postgredep = 'python-psycopg2'
     }

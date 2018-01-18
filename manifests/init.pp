@@ -34,7 +34,7 @@ class newrelic_plugin_agent (
   # https://github.com/MeetMe/newrelic-plugin-agent/issues/356
   ~> exec {'pip install --upgrade setuptools':
     path   => '/usr/bin',
-    unless => 'pip show setuptools 2> /dev/null',
+    unless => 'pip show setuptools | grep "Version: 3" 2> /dev/null',
   }
 
   # this supports the postfix version
